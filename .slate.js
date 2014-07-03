@@ -8,36 +8,61 @@ S.cfga({
 });
 
 // Monitors
-var monTboltL = "0";
-var monTboltR = "2";
-var monLaptop = "1680x1050";
+var firstMonitor = "0",
+    secondMonitor = "1",
+    thirdMonitor = "2";
 
 // Operations
 var lapChat = S.op("corner", {
-  "screen" : monLaptop,
+  "screen" : secondMonitor,
   "direction" : "top-left",
   "width" : "screenSizeX/9",
   "height" : "screenSizeY"
 });
-var lapMain = lapChat.dup({ "direction" : "top-right", "width" : "8*screenSizeX/9" });
-var tboltLFull = S.op("move", {
-  "screen" : monTboltL,
+
+var focusTerminal = S.op("focus", {
+  "app": "Terminal"
+});
+
+var hideDictionary = S.op("hide", {
+  "app": "Dictionary"
+});
+
+var moveToFirstMonitor = S.op("move", {
+  "screen" : firstMonitor,
   "x" : "screenOriginX",
   "y" : "screenOriginY",
   "width" : "screenSizeX",
   "height" : "screenSizeY"
 });
-var tboltLLeft = tboltLFull.dup({ "width" : "screenSizeX/3" });
-var tboltLMid = tboltLLeft.dup({ "x" : "screenOriginX+screenSizeX/3" });
-var tboltLRight = tboltLLeft.dup({ "x" : "screenOriginX+(screenSizeX*2/3)" });
-var tboltLLeftTop = tboltLLeft.dup({ "height" : "screenSizeY/2" });
-var tboltLLeftBot = tboltLLeftTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
-var tboltLMidTop = tboltLMid.dup({ "height" : "screenSizeY/2" });
-var tboltLMidBot = tboltLMidTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
-var tboltLRightTop = tboltLRight.dup({ "height" : "screenSizeY/2" });
-var tboltLRightBot = tboltLRightTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
+
+var halfScreen = S.op("move", {
+  "x" : "screenOriginX",
+  "y" : "screenOriginY",
+  "width": "screenSizeX/2",
+  "height": "screenSizeY"
+});
+
+var divideToOneSquare = S.op("corner", {
+  "direction" : "top-right",
+  "width" : "screenSizeX/2",
+  "height" : "screenSizeY/2"
+});
+
+var lapMain = lapChat.dup({ "direction" : "top-right", "width" : "8*screenSizeX/9" });
+
+var moveToFirstMonitor13Left = moveToFirstMonitor.dup({ "width" : "screenSizeX/3" }),
+    moveToFirstMonitor13Middle = moveToFirstMonitor13Left.dup({ "x" : "screenOriginX+screenSizeX/3" }),
+    moveToFirstMonitor13Right = moveToFirstMonitor13Left.dup({ "x" : "screenOriginX+(screenSizeX*2/3)" }),
+    moveToFirstMonitor13LeftTop = moveToFirstMonitor13Left.dup({ "height" : "screenSizeY/2" }),
+    moveToFirstMonitor13LeftBot = moveToFirstMonitor13LeftTop.dup({ "y" : "screenOriginY+screenSizeY/2" }),
+    moveToFirstMonitor13MiddleTop = moveToFirstMonitor13Middle.dup({ "height" : "screenSizeY/2" }),
+    moveToFirstMonitor13MiddleBot = moveToFirstMonitor13MiddleTop.dup({ "y" : "screenOriginY+screenSizeY/2" }),
+    moveToFirstMonitor13RightTop = moveToFirstMonitor13Right.dup({ "height" : "screenSizeY/2" }),
+    moveToFirstMonitor13RightBot = moveToFirstMonitor13RightTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
+
 var tboltRFull = S.op("move", {
-  "screen" : monTboltR,
+  "screen" : thirdMonitor,
   "x" : "screenOriginX",
   "y" : "screenOriginY",
   "width" : "screenSizeX",
@@ -59,18 +84,14 @@ var lapMainHash = {
   "ignore-fail" : true,
   "repeat" : true
 };
-var adiumHash = {
+var lineHash = {
   "operations" : [lapChat, lapMain],
   "ignore-fail" : true,
-  "title-order" : ["Contacts"],
   "repeat-last" : true
 };
-var mvimHash = {
-  "operations" : [tboltLRight, tboltRLeft],
-  "repeat" : true
-};
+
 var iTermHash = {
-  "operations" : [tboltLMidTop, tboltLMidBot, tboltRMidTop, tboltRMidBot, tboltRRightBot],
+  "operations" : [moveToFirstMonitor13MiddleTop, moveToFirstMonitor13MiddleBot, tboltRMidTop, tboltRMidBot, tboltRRightBot],
   "sort-title" : true,
   "repeat" : true
 };
@@ -79,7 +100,7 @@ var genBrowserHash = function(regex) {
     "operations" : [function(windowObject) {
       var title = windowObject.title();
       if (title !== undefined && title.match(regex)) {
-        windowObject.doOperation(tboltLLeft);
+        windowObject.doOperation(moveToFirstMonitor13Left);
       } else {
         windowObject.doOperation(lapMain);
       }
@@ -91,11 +112,10 @@ var genBrowserHash = function(regex) {
 
 // 3 monitor layout
 var threeMonitorLayout = S.lay("threeMonitor", {
-  "MacVim" : mvimHash,
   "iTerm" : iTermHash,
   "Google Chrome" : genBrowserHash(/^Developer\sTools\s-\s.+$/),
   "GitX" : {
-    "operations" : [tboltLLeftTop],
+    "operations" : [moveToFirstMonitor13LeftTop],
     "repeat" : true
   },
   "Firefox" : genBrowserHash(/^Firebug\s-\s.+$/),
@@ -108,11 +128,31 @@ var threeMonitorLayout = S.lay("threeMonitor", {
 
 // 1 monitor layout
 var oneMonitorLayout = S.lay("oneMonitor", {
-  "Google Chrome" : lapMainHash,
-  "Xcode" : lapMainHash,
-  "Firefox" : lapMainHash,
-  "Safari" : lapMainHash,
-  "Spotify" : lapMainHash
+  "_after_" : {
+    "operations": focusTerminal
+  },
+  "_before_": {
+    "operations": hideDictionary
+  },
+  "Google Chrome" : {
+    "operations" : [moveToFirstMonitor],
+    "ignore-fail" : true,
+    "repeat" : true
+  },
+  "Colloquy": {
+    "operations": [divideToOneSquare.dup({"direction": "bottom-right", "screen" : secondMonitor})],
+    "ignore-fail": true,
+    "repeat": true
+  },
+  "Sublime Text": {
+    "operations": [halfScreen.dup({"screen": secondMonitor})],
+    "repeat": true
+  },
+  "Terminal": {
+    "operations": [divideToOneSquare.dup({"direction": "top-right", "screen" : secondMonitor})],
+    "ignore-fail": true,
+    "repeat": true
+  }
 });
 
 var twoMonitorLayout = oneMonitorLayout;
@@ -141,7 +181,7 @@ var universalLayout = function() {
 // Batch bind everything. Less typing.
 S.bnda({
   // Layout Bindings
-  "space:ctrl" : universalLayout,
+  "u:ctrl;alt;cmd" : universalLayout,
 
   // Resize Bindings
   // NOTE: some of these may *not* work if you have not removed the expose/spaces/mission control bindings
@@ -175,10 +215,10 @@ S.bnda({
   "pad1:ctrl;alt" : S.op("throw", { "screen" : "2", "width" : "screenSizeX", "height" : "screenSizeY" }),
   "pad2:ctrl;alt" : S.op("throw", { "screen" : "1", "width" : "screenSizeX", "height" : "screenSizeY" }),
   "pad3:ctrl;alt" : S.op("throw", { "screen" : "0", "width" : "screenSizeX", "height" : "screenSizeY" }),
-  "right:ctrl;alt;cmd" : S.op("throw", { "screen" : "right"}),
-  "left:ctrl;alt;cmd" : S.op("throw", { "screen" : "left"}),
-  "up:ctrl;alt;cmd" : S.op("throw", { "screen" : "up"}),
-  "down:ctrl;alt;cmd" : S.op("throw", { "screen" : "down"}),
+  "right:ctrl;alt;cmd" : S.op("throw", { "screen" : "right", "width" : "screenSizeX", "height" : "screenSizeY"}),
+  "left:ctrl;alt;cmd" : S.op("throw", { "screen" : "left", "width" : "screenSizeX", "height" : "screenSizeY"}),
+  "up:ctrl;alt;cmd" : S.op("throw", { "screen" : "up", "width" : "screenSizeX", "height" : "screenSizeY"}),
+  "down:ctrl;alt;cmd" : S.op("throw", { "screen" : "down", "width" : "screenSizeX", "height" : "screenSizeY"}),
 
   // Focus Bindings
   // NOTE: some of these may *not* work if you have not removed the expose/spaces/mission control bindings
