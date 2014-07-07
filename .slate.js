@@ -43,14 +43,15 @@ var halfScreen = S.op("move", {
   "height": "screenSizeY"
 });
 
-var divideToOneSquare = S.op("corner", {
+var cornerTo = S.op("corner", {
   "direction" : "top-right",
-  "width" : "screenSizeX/2",
+  "width" : "screenSizeX/3",
   "height" : "screenSizeY/2"
 });
 
 var lapMain = lapChat.dup({ "direction" : "top-right", "width" : "8*screenSizeX/9" });
 
+// Define First Monitor
 var moveToFirstMonitor13Left = moveToFirstMonitor.dup({ "width" : "screenSizeX/3" }),
     moveToFirstMonitor13Middle = moveToFirstMonitor13Left.dup({ "x" : "screenOriginX+screenSizeX/3" }),
     moveToFirstMonitor13Right = moveToFirstMonitor13Left.dup({ "x" : "screenOriginX+(screenSizeX*2/3)" }),
@@ -61,22 +62,23 @@ var moveToFirstMonitor13Left = moveToFirstMonitor.dup({ "width" : "screenSizeX/3
     moveToFirstMonitor13RightTop = moveToFirstMonitor13Right.dup({ "height" : "screenSizeY/2" }),
     moveToFirstMonitor13RightBot = moveToFirstMonitor13RightTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
 
-var tboltRFull = S.op("move", {
+// Define Third Monitor if you have...
+var moveToThirdMonitor = S.op("move", {
   "screen" : thirdMonitor,
   "x" : "screenOriginX",
   "y" : "screenOriginY",
   "width" : "screenSizeX",
   "height" : "screenSizeY"
 });
-var tboltRLeft = tboltRFull.dup({ "width" : "screenSizeX/3" });
-var tboltRMid = tboltRLeft.dup({ "x" : "screenOriginX+screenSizeX/3" });
-var tboltRRight = tboltRLeft.dup({ "x" : "screenOriginX+(screenSizeX*2/3)" });
-var tboltRLeftTop = tboltRLeft.dup({ "height" : "screenSizeY/2" });
-var tboltRLeftBot = tboltRLeftTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
-var tboltRMidTop = tboltRMid.dup({ "height" : "screenSizeY/2" });
-var tboltRMidBot = tboltRMidTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
-var tboltRRightTop = tboltRRight.dup({ "height" : "screenSizeY/2" });
-var tboltRRightBot = tboltRRightTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
+var moveToThirdMonitor13Left = moveToThirdMonitor.dup({ "width" : "screenSizeX/3" });
+var moveToThirdMonitor13Middle = moveToThirdMonitor13Left.dup({ "x" : "screenOriginX+screenSizeX/3" });
+var moveToThirdMonitor13Right = moveToThirdMonitor13Left.dup({ "x" : "screenOriginX+(screenSizeX*2/3)" });
+var moveToThirdMonitor13LeftTop = moveToThirdMonitor13Left.dup({ "height" : "screenSizeY/2" });
+var moveToThirdMonitor13LeftBot = moveToThirdMonitor13LeftTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
+var moveToThirdMonitor13MiddleTop = moveToThirdMonitor13Middle.dup({ "height" : "screenSizeY/2" });
+var moveToThirdMonitor13MiddleBot = moveToThirdMonitor13MiddleTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
+var moveToThirdMonitor13RightTop = moveToThirdMonitor13Right.dup({ "height" : "screenSizeY/2" });
+var moveToThirdMonitor13RightBot = moveToThirdMonitor13RightTop.dup({ "y" : "screenOriginY+screenSizeY/2" });
 
 // common layout hashes
 var lapMainHash = {
@@ -91,7 +93,7 @@ var lineHash = {
 };
 
 var iTermHash = {
-  "operations" : [moveToFirstMonitor13MiddleTop, moveToFirstMonitor13MiddleBot, tboltRMidTop, tboltRMidBot, tboltRRightBot],
+  "operations" : [moveToFirstMonitor13MiddleTop, moveToFirstMonitor13MiddleBot, moveToThirdMonitor13MiddleTop, moveToThirdMonitor13MiddleBot, moveToThirdMonitor13RightBot],
   "sort-title" : true,
   "repeat" : true
 };
@@ -111,19 +113,10 @@ var genBrowserHash = function(regex) {
 };
 
 // 3 monitor layout
-var threeMonitorLayout = S.lay("threeMonitor", {
+var thirdMonitorLayout = S.lay("thirdMonitor", {
   "iTerm" : iTermHash,
   "Google Chrome" : genBrowserHash(/^Developer\sTools\s-\s.+$/),
-  "GitX" : {
-    "operations" : [moveToFirstMonitor13LeftTop],
-    "repeat" : true
-  },
-  "Firefox" : genBrowserHash(/^Firebug\s-\s.+$/),
-  "Safari" : lapMainHash,
-  "Spotify" : {
-    "operations" : [tboltRRightTop],
-    "repeat" : true
-  }
+  "Firefox" : genBrowserHash(/^Firebug\s-\s.+$/)
 });
 
 // 1 monitor layout
@@ -140,16 +133,16 @@ var oneMonitorLayout = S.lay("oneMonitor", {
     "repeat" : true
   },
   "Colloquy": {
-    "operations": [divideToOneSquare.dup({"direction": "bottom-right", "screen" : secondMonitor})],
+    "operations": [cornerTo.dup({"direction": "bottom-right", "screen" : secondMonitor})],
     "ignore-fail": true,
     "repeat": true
   },
   "Sublime Text": {
-    "operations": [halfScreen.dup({"screen": secondMonitor})],
+    "operations": [halfScreen.dup({"screen": secondMonitor, "width": "2*screenSizeX/3"})],
     "repeat": true
   },
   "Terminal": {
-    "operations": [divideToOneSquare.dup({"direction": "top-right", "screen" : secondMonitor})],
+    "operations": [cornerTo.dup({"direction": "top-right", "screen" : secondMonitor})],
     "ignore-fail": true,
     "repeat": true
   }
@@ -158,19 +151,19 @@ var oneMonitorLayout = S.lay("oneMonitor", {
 var twoMonitorLayout = oneMonitorLayout;
 
 // Defaults
-S.def(3, threeMonitorLayout);
+S.def(3, thirdMonitorLayout);
 S.def(2, twoMonitorLayout);
 S.def(1, oneMonitorLayout);
 
 // Layout Operations
-var threeMonitor = S.op("layout", { "name" : threeMonitorLayout });
+var thirdMonitor = S.op("layout", { "name" : thirdMonitorLayout });
 var twoMonitor = S.op("layout", { "name" : twoMonitorLayout });
 var oneMonitor = S.op("layout", { "name" : oneMonitorLayout });
 var universalLayout = function() {
   // Should probably make sure the resolutions match but w/e
   S.log("SCREEN COUNT: "+S.screenCount());
   if (S.screenCount() === 3) {
-    threeMonitor.run();
+    thirdMonitor.run();
   } else if (S.screenCount() === 2) {
     twoMonitor.run();
   } else if (S.screenCount() === 1) {
@@ -234,6 +227,8 @@ S.bnda({
   // "down:cmd" : S.op("focus", { "direction" : "down" }),
   // "up:cmd;alt" : S.op("focus", { "direction" : "behind" }),
   // "down:cmd;alt" : S.op("focus", { "direction" : "behind" }),
+
+  "s:ctrl;cmd" : S.op("focus", { "app": "Sublime Text" }),
 
   // Window Hints
   "esc:cmd" : S.op("hint"),
