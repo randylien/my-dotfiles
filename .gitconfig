@@ -14,3 +14,6 @@
 #
 [include]
     path = ~/.gitconfig.local
+[user]
+	name = Randy Lien
+	email = randylien@kkbox.com
